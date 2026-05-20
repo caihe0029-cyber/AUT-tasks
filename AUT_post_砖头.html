@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>创造力任务（后测）</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap');
+
+  :root {
+    --ink: #1a1a1a;
+    --paper: #f7f4ef;
+    --accent: #2d5a8e;
+    --accent-light: #e8f0f9;
+    --warn: #c0392b;
+    --warn-light: #fdf0ef;
+    --border: #d4cfc6;
+    --muted: #7a7570;
+    --success: #27705a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 40px 20px 60px;
+  }
+
+  /* ── PHASE: INSTRUCTION ── */
+  #phase-instruction {
+    max-width: 640px;
+    width: 100%;
+    animation: fadeIn .5s ease;
+  }
+
+  .label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 20px;
+    color: var(--ink);
+  }
+
+  .object-highlight {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    padding: 2px 10px;
+    border-radius: 3px;
+  }
+
+  .instruction-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    line-height: 1.85;
+    font-size: 15px;
+    color: #333;
+  }
+
+  .instruction-card p { margin-bottom: 12px; }
+  .instruction-card p:last-child { margin-bottom: 0; }
+
+  .note-box {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    font-size: 13.5px;
+    color: var(--accent);
+    margin-bottom: 28px;
+    line-height: 1.7;
+  }
+
+  .timer-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+
+  .timer-preview .dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+
+  .btn-start {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: background .2s, transform .1s;
+  }
+  .btn-start:hover { background: #1e3f6b; transform: translateY(-1px); }
+  .btn-start:active { transform: translateY(0); }
+
+  /* ── PHASE: TASK ── */
+  #phase-task {
+    display: none;
+    max-width: 720px;
+    width: 100%;
+    animation: fadeIn .4s ease;
+  }
+
+  .task-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .task-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .task-object {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  /* Timer */
+  #timer-display {
+    text-align: center;
+    min-width: 90px;
+  }
+
+  #timer-digits {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 2px;
+    line-height: 1;
+    transition: color .3s;
+  }
+
+  #timer-digits.warn { color: var(--warn); animation: pulse .8s infinite; }
+
+  #timer-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Progress bar */
+  .progress-track {
+    width: 100%;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+
+  #progress-bar {
+    height: 100%;
+    width: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 1s linear, background .3s;
+  }
+
+  #progress-bar.warn { background: var(--warn); }
+
+  /* Input area */
+  .input-wrapper {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    transition: border-color .2s;
+  }
+  .input-wrapper:focus-within { border-color: var(--accent); }
+  .input-wrapper.locked { border-color: var(--border); background: #fafafa; }
+
+  .input-header {
+    padding: 12px 18px;
+    background: #fafaf8;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  #response-count {
+    background: var(--accent);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  #response-area {
+    width: 100%;
+    min-height: 320px;
+    padding: 18px 20px;
+    border: none;
+    outline: none;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 15px;
+    line-height: 2;
+    color: var(--ink);
+    background: transparent;
+    resize: none;
+  }
+
+  #response-area:disabled {
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+
+  .hint {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  /* ── PHASE: DONE ── */
+  #phase-done {
+    display: none;
+    max-width: 640px;
+    width: 100%;
+    animation: fadeIn .5s ease;
+    text-align: center;
+  }
+
+  .done-icon {
+    width: 64px; height: 64px;
+    background: var(--success);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    font-size: 28px;
+  }
+
+  .done-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .done-subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    line-height: 1.7;
+  }
+
+  .response-summary {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    text-align: left;
+    margin-bottom: 28px;
+  }
+
+  .summary-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  #summary-count-box {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  #summary-count {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .summary-unit { font-size: 16px; color: var(--muted); }
+
+  #summary-list {
+    font-size: 13.5px;
+    line-height: 2;
+    color: #444;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .credemo-note {
+    background: var(--accent-light);
+    border: 1px solid #b8d0ec;
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 13.5px;
+    color: var(--accent);
+    line-height: 1.7;
+    margin-bottom: 24px;
+    text-align: left;
+  }
+
+  .credemo-note strong { display: block; margin-bottom: 6px; font-weight: 600; }
+
+  .btn-copy {
+    display: inline-block;
+    padding: 10px 22px;
+    background: transparent;
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    border-radius: 8px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: all .2s;
+  }
+  .btn-copy:hover { background: var(--accent); color: #fff; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .6; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ① 指导语阶段 -->
+<div id="phase-instruction">
+  <p class="label">创造力任务 · 后测</p>
+  <h1>请为 <span class="object-highlight">砖头</span> 想出尽可能多的用途</h1>
+
+  <div class="instruction-card">
+    <p>请根据生活中常见的物品——<strong>砖头</strong>，在规定时间内，尽可能多地写出它的各种<strong>非常规用途</strong>（即除了"建造房屋"之外的其他用法）。</p>
+    <p>想出的用途越多、越独特越好。每行写一种用途，无需解释，关键词即可。</p>
+  </div>
+
+  <div class="note-box">
+    ⏱ 本任务限时 <strong>2 分钟</strong>。计时开始后请立即作答，时间结束后将无法继续填写。请做好准备后再点击开始。
+  </div>
+
+  <div class="timer-preview">
+    <div class="dot"></div>
+    点击下方按钮后计时立即开始
+  </div>
+
+  <button class="btn-start" onclick="startTask()">开始作答</button>
+</div>
+
+<!-- ② 作答阶段 -->
+<div id="phase-task">
+  <div class="task-header">
+    <div>
+      <div class="task-title">砖头可以用来做什么？</div>
+      <div class="task-object">请写出所有你能想到的非常规用途，每行一个</div>
+    </div>
+    <div id="timer-display">
+      <div id="timer-digits">2:00</div>
+      <div id="timer-label">剩余时间</div>
+    </div>
+  </div>
+
+  <div class="progress-track">
+    <div id="progress-bar"></div>
+  </div>
+
+  <div class="input-wrapper" id="input-wrapper">
+    <div class="input-header">
+      <span>在此输入每种用途（每行一个）</span>
+      <span id="response-count">0 条</span>
+    </div>
+    <textarea id="response-area" placeholder="例如：当门挡使用&#10;砸核桃&#10;用作画笔的替代……&#10;&#10;尽情发挥吧 →" autofocus></textarea>
+  </div>
+
+  <p class="hint">💡 不必追求完美表达，关键词即可 · 用途越多越好 · 越不寻常越好</p>
+</div>
+
+<!-- ③ 完成阶段 -->
+<div id="phase-done">
+  <div class="done-icon">✓</div>
+  <h2 class="done-title">任务完成！</h2>
+  <p class="done-subtitle">时间到，你的作答已记录。请查看下方的作答摘要，<br>然后按照提示返回问卷继续填写。</p>
+
+  <div class="response-summary">
+    <p class="summary-label">你的作答摘要</p>
+    <div id="summary-count-box">
+      <span id="summary-count">0</span>
+      <span class="summary-unit">条用途</span>
+    </div>
+    <div id="summary-list"></div>
+  </div>
+
+  <div class="credemo-note">
+    <strong>📋 接下来请做：</strong>
+    点击下方"复制作答内容"，然后返回问卷，将内容粘贴到对应的填写框中。
+  </div>
+
+  <button class="btn-copy" onclick="copyResponses()">复制作答内容</button>
+</div>
+
+<script>
+  const TOTAL_SECONDS = 120;
+  let remaining = TOTAL_SECONDS;
+  let interval = null;
+  let responses = [];
+
+  function startTask() {
+    document.getElementById('phase-instruction').style.display = 'none';
+    document.getElementById('phase-task').style.display = 'block';
+    document.getElementById('response-area').focus();
+    interval = setInterval(tick, 1000);
+    updateResponseCount();
+  }
+
+  function tick() {
+    remaining--;
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    const digits = document.getElementById('timer-digits');
+    const bar = document.getElementById('progress-bar');
+
+    digits.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    bar.style.width = (remaining / TOTAL_SECONDS * 100) + '%';
+
+    if (remaining <= 30) {
+      digits.classList.add('warn');
+      bar.classList.add('warn');
+    }
+
+    if (remaining <= 0) {
+      clearInterval(interval);
+      endTask();
+    }
+  }
+
+  function updateResponseCount() {
+    const area = document.getElementById('response-area');
+    area.addEventListener('input', () => {
+      const lines = area.value.split('\n').filter(l => l.trim().length > 0);
+      document.getElementById('response-count').textContent = lines.length + ' 条';
+    });
+  }
+
+  function endTask() {
+    const area = document.getElementById('response-area');
+    area.disabled = true;
+    document.getElementById('input-wrapper').classList.add('locked');
+
+    const raw = area.value;
+    responses = raw.split('\n').filter(l => l.trim().length > 0);
+
+    document.getElementById('phase-task').style.display = 'none';
+    document.getElementById('phase-done').style.display = 'block';
+    document.getElementById('summary-count').textContent = responses.length;
+    document.getElementById('summary-list').textContent = responses.join('\n');
+  }
+
+  function copyResponses() {
+    const text = responses.join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.btn-copy');
+      btn.textContent = '✓ 已复制';
+      btn.style.background = 'var(--success)';
+      btn.style.borderColor = 'var(--success)';
+      btn.style.color = '#fff';
+    });
+  }
+</script>
+</body>
+</html>
